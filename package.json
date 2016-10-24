@@ -1,0 +1,20 @@
+{
+  "name": "karma-tfs-reporter",
+  "version": "1.0.0",
+  "description": "A Karma plugin for reporting test results to TFS",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "keywords": [
+    "karma-plugin",
+    "karma-reporter",
+    "karma-tfs-reporter",
+    "tfs"
+  ],
+  "dependencies": {
+    "node-uuid": "^1.4.7"
+  }
+}
