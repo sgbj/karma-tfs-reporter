@@ -1,7 +1,6 @@
 var path = require('path');
 var fs = require('fs');
 var trx = require('./trx');
-//"C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe" UnitTestProject1.dll /UseVsixExtensions:true /logger:trx
 
 var TfsReporter = function(baseReporterDecorator, config, formatError) {
     baseReporterDecorator(this);
@@ -30,21 +29,21 @@ var TfsReporter = function(baseReporterDecorator, config, formatError) {
         var now = Date.now();
         testResults.specs.push({
             id: result.id,
-            suite: result.suite.length ? result.suite[0] : 'All tests',
+            suite: result.suite.length ? result.suite.join(' - ') : 'Results not in a list',
             description: result.description,
             start: new Date(now),
             finish: new Date(now + result.time),
             time: result.time,
             outcome: result.skipped ? 'NotExecuted' :
-                result.success ? 'Passed' : 'Failed'
+                result.success ? 'Passed' : 'Failed',
+            message: result.log.join('\n'),
+            stackTrace: result.log.join('\n')
         });
     };
 
-    this.onBrowserComplete = function (browser) {
-    };
+    this.onBrowserComplete = function (browser) { };
 
-    this.onRunComplete = function () {
-    };
+    this.onRunComplete = function () { };
 
     this.onExit = function (done) {
         fs.writeFileSync(testResults.name + '.xml', trx(testResults));
