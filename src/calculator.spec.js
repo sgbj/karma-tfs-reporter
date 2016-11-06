@@ -1,4 +1,4 @@
-const calculator = require('./calculator');
+var calculator = require('./calculator');
 
 describe("calculator", function () {
   it("should multiply 2 and 3", function () {
