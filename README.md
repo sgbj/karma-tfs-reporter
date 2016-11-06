@@ -11,7 +11,7 @@ npm install --save karma-tfs-reporter
 
 Example karma.conf.js (view the [sample project](https://github.com/sgbj/karma-tfs-reporter/tree/sample)):
 
-```
+```js
 module.exports = function (config) {
     config.set({
         frameworks: ['jasmine'],
