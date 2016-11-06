@@ -1,5 +1,6 @@
 var path = require('path');
 var fs = require('fs');
+var mkpath = require('mkpath');
 var trx = require('./trx');
 
 var TfsReporter = function(baseReporterDecorator, config, formatError) {
@@ -7,10 +8,12 @@ var TfsReporter = function(baseReporterDecorator, config, formatError) {
 
     var testResults;
     var messages = [];
+    var outputDir = config.tfsReporter && config.tfsReporter.outputDir ? config.tfsReporter.outputDir : 'testresults';
+    var outputFile = config.tfsReporter && config.tfsReporter.outputFile ? config.tfsReporter.outputFile : 'testresults_${date}.xml';
 
     this.onRunStart = function (browsers) {
         testResults = {
-            name: 'karma-test-results',
+            name: path.join(outputDir, outputFile.replace('${date}', new Date().toISOString().replace(/:/g, ''))),
             agent: {},
             specs: []
         };
@@ -29,7 +32,7 @@ var TfsReporter = function(baseReporterDecorator, config, formatError) {
         var now = Date.now();
         testResults.specs.push({
             id: result.id,
-            suite: result.suite.length ? result.suite.join(' - ') : 'Results not in a list',
+            suite: result.suite.length ? result.suite.join(' ') : 'Results not in a list',
             description: result.description,
             start: new Date(now),
             finish: new Date(now + result.time),
@@ -46,7 +49,8 @@ var TfsReporter = function(baseReporterDecorator, config, formatError) {
     this.onRunComplete = function () { };
 
     this.onExit = function (done) {
-        fs.writeFileSync(testResults.name + '.xml', trx(testResults));
+        mkpath.sync(outputDir);
+        fs.writeFileSync(testResults.name, trx(testResults));
         done();
     };
 

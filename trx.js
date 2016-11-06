@@ -46,7 +46,7 @@ module.exports = function (testResults) {
         spec.suite = escape(spec.suite);
         spec.description = escape(spec.description);
         return {
-            name: `${spec.suite}: ${spec.description}`,
+            name: `${spec.suite} ${spec.description}`,
             executionId: uuid(),
             testId: uuid(),
             result: spec
@@ -71,8 +71,8 @@ module.exports = function (testResults) {
     `<UnitTestResult executionId="${spec.executionId}" testId="${spec.testId}" testName="${spec.name}" computerName="${os.hostname()}" duration="${duration(spec.result.start, spec.result.finish)}" startTime="${toISOString(spec.result.start)}" endTime="${toISOString(spec.result.finish)}" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="${spec.result.outcome}" testListId="${suites[spec.result.suite]}">
       ${spec.result.outcome == 'Failed' ? `<Output>
         <ErrorInfo>
-          <Message>${spec.result.message}</Message>
-          <StackTrace>${spec.result.stackTrace}</StackTrace>
+          <Message>${escape(spec.result.message)}</Message>
+          <StackTrace>${escape(spec.result.stackTrace)}</StackTrace>
         </ErrorInfo>
       </Output>` : ``}
     </UnitTestResult>
