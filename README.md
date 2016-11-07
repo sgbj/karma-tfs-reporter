@@ -22,7 +22,7 @@ module.exports = function (config) {
         plugins: [
             require('karma-jasmine'),
             require('karma-webpack'),
-            require('karma-chrome-launcher'),
+            require('karma-phantomjs-launcher'),
             require('karma-tfs-reporter')
         ],
         preprocessors: {
@@ -34,7 +34,7 @@ module.exports = function (config) {
         webpackMiddleware: {
             stats: 'errors-only'
         },
-        browsers: ['Chrome'],
+        browsers: ['PhantomJS'],
         reporters: ['progress', 'tfs'],
         // Default settings (optional)
         tfsReporter: {
