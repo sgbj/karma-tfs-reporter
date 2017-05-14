@@ -10,7 +10,7 @@ function pad(n, width, z) {
 }
 
 function toISOString (time) {
-    var date = new Date(time),
+    var date = new Date(time);
     return dateFormat(date, "isoDateTime");
 };
 
@@ -54,10 +54,7 @@ module.exports = function (testResults) {
     var executed = testResults.specs.filter(spec => spec.outcome != 'NotExecuted');
     var notExecuted = testResults.specs.filter(spec => spec.outcome == 'NotExecuted');
 
-    var unitTestResultsArray = [];
-    var testDefinitionsArray = [];
-    var testEntryArray = [];
-    specs.map(spec => {
+    var unitTestResultsArray = specs.map(spec => {
       var testResult = {
         '@executionId': spec.executionId,
         '@testId': spec.testId,
@@ -76,9 +73,11 @@ module.exports = function (testResults) {
           StackTrace:escape(spec.result.stackTrace)
         }
       }
-      unitTestResultsArray.push(testResult);
+      return testResult;
+    });
 
-      var testDef = {
+    var testDefinitionsArray = specs.map(spec => {
+      return {
         '@name': spec.name,
         '@id': spec.testId,
         'Execution':{
@@ -90,27 +89,25 @@ module.exports = function (testResults) {
           '@codeBase': spec.name
         }
       };
-      testDefinitionsArray.push(testDef);
+    });
 
-      var testEntryObj = { 
+    var testEntryArray = specs.map(spec => {
+      return { 
         '@testId': spec.testId,
         '@executionId': spec.executionId,
         '@testListId': suites[spec.result.suite]
-      }
-      testEntryArray.push(testEntryObj);
+      };
     });
 
-    var testListArray = [];
-    Object.keys(suites).map(suite => {
-      testListArray.push({
+    var testListArray = Object.keys(suites).map(suite => {;
+      return {
         '@name': suite,
         '@id': suites[suite]
-      });
+      };
     });
 
-    var skippedArray = [];
-    notExecuted.map(spec => {
-      skippedArray.push({'#text': `Test '${spec.name}' was skipped in the test run.`});
+    var skippedArray = notExecuted.map(spec => {
+      return {'#text': `Test '${spec.name}' was skipped in the test run.`};
     });
 
     var testObj = {TestRun: {
@@ -139,13 +136,13 @@ module.exports = function (testResults) {
         Counters:{
           '@total': testResults.specs.length,
           '@executed': executed.length,
-          '@passed': passeds.length,
+          '@passed': passed.length,
           '@failed': failed.length
         },
         Output: {
           StdOut: skippedArray
         }
       }
-    }}
+    }};
     return xmlbuilder.create(testObj, { version: '1.0', encoding: 'UTF-8'});
 };
