@@ -1,5 +1,7 @@
 var uuid = require('node-uuid');
 var os = require('os');
+var xmlbuilder = require('xmlbuilder');
+var dateFormat = require('dateformat');
 
 function pad(n, width, z) {
   z = z || '0';
@@ -7,22 +9,12 @@ function pad(n, width, z) {
   return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
 }
 
-var toISOString = function(time) {
+function toISOString (time) {
     var date = new Date(time),
-        tzo = -date.getTimezoneOffset(),
-        dif = tzo >= 0 ? '+' : '-';
-    return date.getFullYear() 
-        + '-' + pad(date.getMonth() + 1, 2)
-        + '-' + pad(date.getDate(), 2)
-        + 'T' + pad(date.getHours(), 2)
-        + ':' + pad(date.getMinutes(), 2) 
-        + ':' + pad(date.getSeconds(), 2) 
-        + '.' + pad(date.getMilliseconds(), 3) + '0000'
-        + dif + pad(tzo / 60, 2) 
-        + ':' + pad(tzo % 60, 2);
+    return dateFormat(date, "isoDateTime");
 };
 
-var duration = function (start, finish) {
+function duration (start, finish) {
   var diff = finish.getTime() - start.getTime();
   return pad((diff / 1000 / 60 / 60) % 100, 2)
         + ':' + pad((diff / 1000 / 60) % 60, 2) 
@@ -62,47 +54,98 @@ module.exports = function (testResults) {
     var executed = testResults.specs.filter(spec => spec.outcome != 'NotExecuted');
     var notExecuted = testResults.specs.filter(spec => spec.outcome == 'NotExecuted');
 
-    // Am I going to hell for this?
-    return `<?xml version="1.0" encoding="UTF-8"?>
-<TestRun id="${uuid()}" name="${testResults.name}" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
-  <Times creation="${toISOString(start)}" start="${toISOString(start)}" finish="${toISOString(finish)}" />
-  <Results>
-    ${specs.map(spec =>
-    `<UnitTestResult executionId="${spec.executionId}" testId="${spec.testId}" testName="${spec.name}" computerName="${os.hostname()}" duration="${duration(spec.result.start, spec.result.finish)}" startTime="${toISOString(spec.result.start)}" endTime="${toISOString(spec.result.finish)}" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="${spec.result.outcome}" testListId="${suites[spec.result.suite]}">
-      ${spec.result.outcome == 'Failed' ? `<Output>
-        <ErrorInfo>
-          <Message>${escape(spec.result.message)}</Message>
-          <StackTrace>${escape(spec.result.stackTrace)}</StackTrace>
-        </ErrorInfo>
-      </Output>` : ``}
-    </UnitTestResult>
-    `).join('')}
-  </Results>
-  <TestDefinitions>
-    ${specs.map(spec =>
-    `<UnitTest name="${spec.name}" id="${spec.testId}">
-      <Execution id="${spec.executionId}" />
-      <TestMethod codeBase="${testResults.name}" className="${spec.result.suite}" name="${spec.name}" />
-    </UnitTest>
-    `).join('')}
-  </TestDefinitions>
-  <TestEntries>
-    ${specs.map(spec =>
-    `<TestEntry testId="${spec.testId}" executionId="${spec.executionId}" testListId="${suites[spec.result.suite]}" />
-    `).join('')}
-  </TestEntries>
-  <TestLists>
-    ${Object.keys(suites).map(suite =>
-    `<TestList name="${suite}" id="${suites[suite]}" />
-    `).join('')}
-  </TestLists>
-  <ResultSummary outcome="${fullOutcome}">
-    <Counters total="${testResults.specs.length}" executed="${executed.length}" passed="${passed.length}" failed="${failed.length}" />
-    <Output>
-      ${notExecuted.map(spec =>
-      `<StdOut>Test '${spec.name}' was skipped in the test run.</StdOut>
-      `).join('')}
-    </Output>
-  </ResultSummary>
-</TestRun>`;
+    var unitTestResultsArray = [];
+    var testDefinitionsArray = [];
+    var testEntryArray = [];
+    specs.map(spec => {
+      var testResult = {
+        '@executionId': spec.executionId,
+        '@testId': spec.testId,
+        '@testName': spec.name,
+        '@computerName': os.hostname(),
+        '@duration': duration(spec.result.start, spec.result.finish),
+        '@startTime': toISOString(spec.result.start),
+        '@endTime': toISOString(spec.result.finish),
+        '@testType': '13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b',
+        '@outcome': spec.result.outcome,
+        '@testListId': suites[spec.result.suite]
+      };
+      if(spec.result.outcome === 'Failed'){
+        testResult.ErrorInfo = {
+          Message:escape(spec.result.message),
+          StackTrace:escape(spec.result.stackTrace)
+        }
+      }
+      unitTestResultsArray.push(testResult);
+
+      var testDef = {
+        '@name': spec.name,
+        '@id': spec.testId,
+        'Execution':{
+          '@id':spec.executionId
+        },
+        'TestMethod': {
+          '@codeBase': testResults.name,
+          '@className': spec.result.suite,
+          '@codeBase': spec.name
+        }
+      };
+      testDefinitionsArray.push(testDef);
+
+      var testEntryObj = { 
+        '@testId': spec.testId,
+        '@executionId': spec.executionId,
+        '@testListId': suites[spec.result.suite]
+      }
+      testEntryArray.push(testEntryObj);
+    });
+
+    var testListArray = [];
+    Object.keys(suites).map(suite => {
+      testListArray.push({
+        '@name': suite,
+        '@id': suites[suite]
+      });
+    });
+
+    var skippedArray = [];
+    notExecuted.map(spec => {
+      skippedArray.push({'#text': `Test '${spec.name}' was skipped in the test run.`});
+    });
+
+    var testObj = {TestRun: {
+      '@id': uuid(),
+      '@name': testResults.name,
+      '@xmlns': 'http://microsoft.com/schemas/VisualStudio/TeamTest/2010',
+      Times: {
+        '@creation': toISOString(start),
+        '@start': toISOString(start),
+        '@finish': toISOString(finish)
+      },
+      Results: {
+        UnitTestResult: unitTestResultsArray
+      },
+      TestDefinitions: {
+        UnitTest: testDefinitionsArray
+      },
+      TestEntries: {
+        TestEntry: testEntryArray
+      },
+      TestLists:{
+        TestList: testListArray
+      },
+      ResultSummary:{
+        '@outcome':fullOutcome,
+        Counters:{
+          '@total': testResults.specs.length,
+          '@executed': executed.length,
+          '@passed': passeds.length,
+          '@failed': failed.length
+        },
+        Output: {
+          StdOut: skippedArray
+        }
+      }
+    }}
+    return xmlbuilder.create(testObj, { version: '1.0', encoding: 'UTF-8'});
 };

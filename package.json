@@ -20,7 +20,9 @@
     "tfs"
   ],
   "dependencies": {
+    "dateformat": "^2.0.0",
     "mkpath": "^1.0.0",
-    "node-uuid": "^1.4.7"
+    "node-uuid": "^1.4.7",
+    "xmlbuilder": "^9.0.0"
   }
 }
