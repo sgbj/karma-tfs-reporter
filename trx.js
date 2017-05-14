@@ -86,7 +86,7 @@ module.exports = function (testResults) {
         'TestMethod': {
           '@codeBase': testResults.name,
           '@className': spec.result.suite,
-          '@codeBase': spec.name
+          '@name': spec.name
         }
       };
     });
