@@ -120,7 +120,7 @@ module.exports = function (testResults) {
           '@start': toISOString(start),
           '@finish': toISOString(finish)
         },
-        TestLists:{
+        TestLists: {
           TestList: testListArray
         },
         TestDefinitions: {
