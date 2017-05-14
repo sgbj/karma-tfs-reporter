@@ -144,5 +144,7 @@ module.exports = function (testResults) {
         }
       }
     }};
-    return xmlbuilder.create(testObj, { version: '1.0', encoding: 'UTF-8'});
+    return xmlbuilder.create(testObj)
+      .dec('1.0', 'UTF-8')
+      .end({pretty:true});
 };
