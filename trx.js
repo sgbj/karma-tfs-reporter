@@ -110,41 +110,42 @@ module.exports = function (testResults) {
       return {'#text': `Test '${spec.name}' was skipped in the test run.`};
     });
 
-    var testObj = {TestRun: {
-      '@id': uuid(),
-      '@name': testResults.name,
-      '@xmlns': 'http://microsoft.com/schemas/VisualStudio/TeamTest/2010',
-      Times: {
-        '@creation': toISOString(start),
-        '@start': toISOString(start),
-        '@finish': toISOString(finish)
-      },
-      Results: {
-        UnitTestResult: unitTestResultsArray
-      },
-      TestDefinitions: {
-        UnitTest: testDefinitionsArray
-      },
-      TestEntries: {
-        TestEntry: testEntryArray
-      },
-      TestLists:{
-        TestList: testListArray
-      },
-      ResultSummary:{
-        '@outcome':fullOutcome,
-        Counters:{
-          '@total': testResults.specs.length,
-          '@executed': executed.length,
-          '@passed': passed.length,
-          '@failed': failed.length
+    return xmlbuilder.create({
+      TestRun: {
+        '@id': uuid(),
+        '@name': testResults.name,
+        '@xmlns': 'http://microsoft.com/schemas/VisualStudio/TeamTest/2010',
+        Times: {
+          '@creation': toISOString(start),
+          '@start': toISOString(start),
+          '@finish': toISOString(finish)
         },
-        Output: {
-          StdOut: skippedArray
+        TestLists:{
+          TestList: testListArray
+        },
+        TestDefinitions: {
+          UnitTest: testDefinitionsArray
+        },
+        TestEntries: {
+          TestEntry: testEntryArray
+        },
+        Results: {
+          UnitTestResult: unitTestResultsArray
+        },
+        ResultSummary:{
+          '@outcome':fullOutcome,
+          Counters:{
+            '@total': testResults.specs.length,
+            '@executed': executed.length,
+            '@passed': passed.length,
+            '@failed': failed.length
+          },
+          Output: {
+            StdOut: skippedArray
+          }
         }
       }
-    }};
-    return xmlbuilder.create(testObj)
+    })
       .dec('1.0', 'UTF-8')
       .end({pretty:true});
 };
