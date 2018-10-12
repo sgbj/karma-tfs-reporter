@@ -31,11 +31,11 @@ function escape(str) {
 };
 
 module.exports = function (testResults) {
-    var start = finish = null;
+    var start = Math.min.apply(testResults.specs.map(spec => spec.start.getTime()));
+    var finish = Math.max.apply(testResults.specs.map(spec => spec.finish.getTime()));
 
-    if(testResults.specs.length) {
-        start = Math.min.apply(testResults.specs.map(spec => spec.start.getTime()));
-        finish = Math.max.apply(testResults.specs.map(spec => spec.finish.getTime()));
+    if(!testResults.specs.length) {
+        start = finish = new Date();
     }
 
     var specs = testResults.specs.map(spec => {
