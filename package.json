@@ -1,6 +1,6 @@
 {
   "name": "karma-tfs-reporter",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A Karma plugin for reporting test results to TFS",
   "main": "index.js",
   "scripts": {

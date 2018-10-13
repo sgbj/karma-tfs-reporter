@@ -49,6 +49,6 @@ Setup the build steps in TFS:
 
 ![build-steps](https://cloud.githubusercontent.com/assets/5178445/20040961/d9b691ee-a426-11e6-9be2-266533274269.png)
 
-Git gud code br0.
+See the results:
 
 ![test-results](https://cloud.githubusercontent.com/assets/5178445/20040962/daf0cc3c-a426-11e6-8467-82e0699b7fd1.png)
