@@ -34,6 +34,10 @@ module.exports = function (testResults) {
     var start = Math.min.apply(null, testResults.specs.map(spec => spec.start.getTime()));
     var finish = Math.max.apply(null, testResults.specs.map(spec => spec.finish.getTime()));
 
+    if(!testResults.specs.length) {
+        start = finish = new Date();
+    }
+
     var specs = testResults.specs.map(spec => {
         spec.suite = escape(spec.suite);
         spec.description = escape(spec.description);
